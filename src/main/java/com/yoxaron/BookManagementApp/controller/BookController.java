@@ -53,11 +53,10 @@ public class BookController {
     }
 
     @PostMapping()
-    public String create(@ModelAttribute("book") Book book, BindingResult bindingResult) {
-//        personValidator.validate(person, bindingResult);
-//        if (bindingResult.hasErrors()) {
-//            return "people/new";
-//        }
+    public String create(@ModelAttribute("book") @Valid Book book, BindingResult bindingResult) {
+        if (bindingResult.hasErrors()) {
+            return "book/new";
+        }
         bookDAO.save(book);
         return "redirect:/books";
     }

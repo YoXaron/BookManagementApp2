@@ -49,8 +49,9 @@ public class PersonDAO {
         jdbcTemplate.update("DELETE FROM Person WHERE person_id=?", id);
     }
 
-    public Optional<Person> getPersonByFullName() {
-        return Optional.empty();
+    public Optional<Person> getPersonByFullName(String fullName) {
+        return jdbcTemplate.query("SELECT * FROM Person WHERE full_name=?", new Object[] {fullName},
+                new PersonMapper()).stream().findAny();
     }
 
     public List<Book> getBooksByPersonId(int id) {

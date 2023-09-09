@@ -2,6 +2,7 @@ package com.yoxaron.BookManagementApp.controller;
 
 import com.yoxaron.BookManagementApp.dao.PersonDAO;
 import com.yoxaron.BookManagementApp.model.Person;
+import com.yoxaron.BookManagementApp.util.PersonValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -16,10 +17,12 @@ import javax.validation.Valid;
 public class PersonController {
 
     private final PersonDAO personDAO;
+    private final PersonValidator personValidator;
 
     @Autowired
-    public PersonController(PersonDAO personDAO) {
+    public PersonController(PersonDAO personDAO, PersonValidator personValidator) {
         this.personDAO = personDAO;
+        this.personValidator = personValidator;
     }
 
     @GetMapping()
@@ -42,11 +45,11 @@ public class PersonController {
     }
 
     @PostMapping()
-    public String create(@ModelAttribute("person") Person person, BindingResult bindingResult) {
-//        personValidator.validate(person, bindingResult);
-//        if (bindingResult.hasErrors()) {
-//            return "people/new";
-//        }
+    public String create(@ModelAttribute("person") @Valid Person person, BindingResult bindingResult) {
+        personValidator.validate(person, bindingResult);
+        if (bindingResult.hasErrors()) {
+            return "person/new";
+        }
         personDAO.save(person);
         return "redirect:/people";
     }
