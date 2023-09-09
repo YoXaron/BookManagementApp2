@@ -5,7 +5,20 @@
     <title>Person</title>
 </head>
 <body>
+<h2>Person info</h2>
 <p th:text="${person.getFullName() + ', ' + person.getBirthYear()}">VALUE</p>
+<hr/>
+
+<div th:if="${books.isEmpty()}">
+    <span>This person has not borrowed any books yet</span>
+</div>
+
+<div th:if="${!books.isEmpty()}">
+    <h3>List of borrowed books: </h3>
+    <ul th:each="book : ${books}">
+        <li th:text="${book.getName() + ', ' + book.getAuthor() + ', ' + book.getYear()}">Book</li>
+    </ul>
+</div>
 <hr/>
 
 <form th:method="GET" th:action="@{/people/{id}/edit(id=${person.getId()})}">

@@ -1,5 +1,6 @@
 package com.yoxaron.BookManagementApp.dao;
 
+import com.yoxaron.BookManagementApp.model.Book;
 import com.yoxaron.BookManagementApp.model.Person;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
@@ -30,7 +31,7 @@ public class PersonDAO {
     }
 
     public Optional<Person> show(String fullName) {
-        return jdbcTemplate.query("SELECT * FROM Person WHERE full_name=?", new Object[] {fullName},
+        return jdbcTemplate.query("SELECT * FROM Person WHERE full_name=?", new Object[]{fullName},
                 new BeanPropertyRowMapper<>(Person.class)).stream().findAny();
     }
 
@@ -46,5 +47,13 @@ public class PersonDAO {
 
     public void delete(int id) {
         jdbcTemplate.update("DELETE FROM Person WHERE person_id=?", id);
+    }
+
+    public Optional<Person> getPersonByFullName() {
+        return Optional.empty();
+    }
+
+    public List<Book> getBooksByPersonId(int id) {
+        return jdbcTemplate.query("SELECT * FROM Book WHERE person_id=?", new Object[]{id}, new BookMapper());
     }
 }

@@ -5,6 +5,7 @@
     <title>New book</title>
 </head>
 <body>
+<h2>New book</h2>
 <form th:method="POST" th:action="@{/books}" th:object="${book}">
     <label for="name">Enter title: </label>
     <input type="text" th:field="*{name}" id="name"/>
