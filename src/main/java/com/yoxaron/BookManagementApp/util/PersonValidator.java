@@ -1,7 +1,7 @@
 package com.yoxaron.BookManagementApp.util;
 
-import com.yoxaron.BookManagementApp.dao.PersonDAO;
 import com.yoxaron.BookManagementApp.model.Person;
+import com.yoxaron.BookManagementApp.service.PersonService;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
 import org.springframework.validation.Validator;
@@ -9,12 +9,11 @@ import org.springframework.validation.Validator;
 @Component
 public class PersonValidator implements Validator {
 
-    private final PersonDAO personDAO;
+    private final PersonService personService;
 
-    public PersonValidator(PersonDAO personDAO) {
-        this.personDAO = personDAO;
+    public PersonValidator(PersonService personService) {
+        this.personService = personService;
     }
-
 
     @Override
     public boolean supports(Class<?> aClass) {
@@ -25,10 +24,8 @@ public class PersonValidator implements Validator {
     public void validate(Object o, Errors errors) {
         Person person = (Person) o;
 
-        if (personDAO.getPersonByFullName(person.getFullName()).isPresent()) {
+        if (personService.getPersonByFullName(person.getFullName()).isPresent()) {
             errors.rejectValue("fullName", "", "This full name is already taken");
         }
     }
-
-
 }

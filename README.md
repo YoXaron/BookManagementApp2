@@ -1,1 +1,1 @@
-# Book Management App
+# Book Management App (Spring Data JPA)
