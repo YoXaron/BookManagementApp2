@@ -3,10 +3,13 @@ package com.yoxaron.BookManagementApp.service;
 import com.yoxaron.BookManagementApp.model.Book;
 import com.yoxaron.BookManagementApp.model.Person;
 import com.yoxaron.BookManagementApp.repository.PersonRepository;
+import org.hibernate.Hibernate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -28,11 +31,7 @@ public class PersonService {
         Optional<Person> foundPerson = personRepository.findById(id);
         return foundPerson.orElse(null);
     }
-
-//    public Optional<Person> show(String fullName) {
-//
-//    }
-
+    
     @Transactional
     public void save(Person person) {
         personRepository.save(person);
@@ -54,6 +53,26 @@ public class PersonService {
     }
 
     public List<Book> getBooksByPersonId(int id) {
-        return personRepository.findBooksByPersonId(id);
+        Optional<Person> optionalPerson = personRepository.findById(id);
+
+        if (optionalPerson.isPresent()) {
+            Person person = optionalPerson.get();
+
+            Hibernate.initialize(person.getBooks());
+
+            for (Book book : person.getBooks()) {
+                long takenAtMillis = Math.abs(book.getTakenAt().getTime() - new Date().getTime());
+
+                //Expire check (10 days)
+                if (takenAtMillis > 864000000) {
+                    book.setExpired(true);
+                }
+            }
+
+            return person.getBooks();
+
+        } else {
+            return Collections.emptyList();
+        }
     }
 }

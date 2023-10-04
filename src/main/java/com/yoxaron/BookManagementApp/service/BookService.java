@@ -5,9 +5,12 @@ import com.yoxaron.BookManagementApp.model.Person;
 import com.yoxaron.BookManagementApp.repository.BookRepository;
 import com.yoxaron.BookManagementApp.repository.PersonRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -17,20 +20,34 @@ import java.util.Optional;
 public class BookService {
 
     private final BookRepository bookRepository;
-    private final PersonRepository personRepository;
 
     @Autowired
-    public BookService(BookRepository bookRepository, PersonRepository personRepository) {
+    public BookService(BookRepository bookRepository) {
         this.bookRepository = bookRepository;
-        this.personRepository = personRepository;
     }
 
-    public List<Book> getAll() {
-        return bookRepository.findAll();
+    public List<Book> getAll(boolean sortByYear) {
+        if (sortByYear) {
+            return bookRepository.findAll(Sort.by("year"));
+        } else {
+            return bookRepository.findAll();
+        }
+    }
+
+    public List<Book> getWithPagination(Integer page, Integer booksPerPage, boolean sortByYear) {
+        if (sortByYear) {
+            return bookRepository.findAll(PageRequest.of(page, booksPerPage, Sort.by("year"))).getContent();
+        } else {
+            return bookRepository.findAll(PageRequest.of(page, booksPerPage)).getContent();
+        }
     }
 
     public Book getById(int id) {
         return bookRepository.findById(id).orElse(null);
+    }
+
+    public List<Book> searchByName(String str) {
+        return bookRepository.findByNameStartingWith(str);
     }
 
     @Transactional
@@ -40,7 +57,9 @@ public class BookService {
 
     @Transactional
     public void update(int id, Book updatedBook) {
+        Book bookToBeUpdated = bookRepository.findById(id).get();
         updatedBook.setId(id);
+        updatedBook.setPerson(bookToBeUpdated.getPerson());
         bookRepository.save(updatedBook);
     }
 
@@ -50,46 +69,35 @@ public class BookService {
     }
 
     public Optional<Person> getBookOwner(int id) {
-//        return jdbcTemplate.query("SELECT Person.* FROM Book JOIN Person ON Book.person_id = Person.person_id " +
-//                "WHERE Book.book_id = ?", new Object[]{id}, new PersonMapper()).stream().findAny();
-
         Optional<Book> optionalBook = bookRepository.findById(id);
 
         if (optionalBook.isPresent()) {
             Book book = optionalBook.get();
             return Optional.ofNullable(book.getPerson());
         } else {
-            // Обработка случая, если книга не найдена
             return Optional.empty();
         }
     }
 
     @Transactional
     public void assign(int id, Person person) {
-//        jdbcTemplate.update("UPDATE Book SET person_id=? WHERE book_id=?", person.getId(), id);
-
         Optional<Book> optionalBook = bookRepository.findById(id);
-        Optional<Person> optionalPerson = personRepository.findById(person.getId());
 
-        if (optionalBook.isPresent() && optionalPerson.isPresent()) {
+        if (optionalBook.isPresent()) {
             Book book = optionalBook.get();
-            person = optionalPerson.get();
-
             book.setPerson(person);
-            bookRepository.save(book);
+            book.setTakenAt(new Date());
         }
     }
 
     @Transactional
     public void release(int id) {
-//        jdbcTemplate.update("UPDATE Book SET person_id=NULL WHERE book_id=?", id);
-
         Optional<Book> optionalBook = bookRepository.findById(id);
 
         if (optionalBook.isPresent()) {
             Book book = optionalBook.get();
             book.setPerson(null);
-            bookRepository.save(book);
+            book.setTakenAt(null);
         }
     }
 }
